@@ -7,10 +7,16 @@ from datetime import datetime, timedelta
 with open('entry/sistema.json') as file:
     data = json.load(file)
 
+with open('entry/lugares.json') as fileL:
+    data_lugar = json.load(fileL)
+
+with open('entry/metas.json') as fileM:
+    data_metas = json.load(fileM)
+
 timestamp = int(time.time())
 
 # especificar fecha desde que se hara el recorrido
-fecha = '2019/12/03'
+fecha = '2019/12/02'
 current_day = datetime.strptime(fecha, '%Y/%m/%d')
 
 current_day_m = current_day.month
@@ -24,22 +30,38 @@ array_week_dates = [current_day]
 for i in range(0, 8):
     array_week_dates.append(current_day + timedelta(days=i+1))
 
-# list_lugares = [880, 168, 227, 841, 733, 174, 684]
-# list_lugares = ['168', '841', '733', '109', '1007', '1002', '1005', '10',
-#                 '1003', '1009', '1001', '319', '110', '102', '111', '104', '11', '103', '1000', '154', '623', '293', '887', '696', '739', '1012']
-
-# list_lugares = [248, 77, 985, 986, 987, 988, 989, 990, 992, 993, 995, 997, 1000, 1001,
-#                 71, 88, 89, 101, 102, 103, 104, 105, 106, 107, 109, 110, 121, 150, 151, 153, 157]
-
+list_wrong = {}
 list_lugares = []
+# list_lugares = [248, 77, 985, 986, 987, 988, 989, 990, 992, 993, 994, 995, 996, 997, 998, 1008, 1000, 1001, 47, 55, 57, 71, 81,
+#                 82, 84, 87, 88, 89, 92, 93, 94, 95, 96, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 109, 110, 121, 150, 151, 153, 157]
 
-f = open('listacept.txt', 'r')
-f1 = f.readlines()
-for x in f1:
-    if(x):
-        list_lugares.append(int(x))
+# list_lugares.sort()
 
-print(list_lugares)
+# print(list_lugares)
+
+# exit()
+
+for lugar in data_lugar:
+
+    sistema_id = 0
+
+    for meta in data_metas:
+
+        if meta['post_id'] == lugar['ID']:
+
+            if meta['meta_key'] == '_sistema_id':
+                sistema_id = meta['meta_value']
+
+    no = 0
+    number = sistema_id
+    try:
+        int(number)
+    except ValueError:
+        no = 0
+    else:
+        if (sistema_id != 0):
+            list_lugares.append(int(sistema_id))
+
 
 jsonAvailibility = {
     "metadata": {
@@ -53,12 +75,10 @@ jsonAvailibility = {
 jsonAvailibilityServ = {}
 jsonAvailibilityServi = []
 jsonAvailibilityServA = []
-count = 0
-for lugar in data:
 
+for lugar in data:
     if lugar['id'] in list_lugares:
-        count += 1
-        print(str(count)+'. '+str(lugar['id']))
+
         for day in lugar['openingDays']:
 
             for week_date in array_week_dates:
@@ -70,6 +90,7 @@ for lugar in data:
                         double_check = 1
 
                     if(double_check and (day['start'] != 0 and day['end'] != 0 and day['start2'] != 0 and day['end2'] != 0)):
+
                         # con recurrencia y excepciones
                         if(day['end'] > day['start'] and day['end2'] > day['start2'] and day['start2'] > day['end']):
 
@@ -119,6 +140,9 @@ for lugar in data:
                                     ]
                                 })
 
+                        else:
+                            list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+
                     else:
 
                         #######################################
@@ -128,6 +152,7 @@ for lugar in data:
                             if(day['start'] is not None and day['end'] is not None):
 
                                 if(day['end'] > day['start']):
+
                                     dt_start = week_date + \
                                         timedelta(seconds=day['start']*60)
                                     timestamp_start = (
@@ -156,11 +181,15 @@ for lugar in data:
                                             "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                         })
 
+                                else:
+                                    list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+
                         if(day['start2'] != 0 and day['end2'] != 0):
 
                             if(day['start2'] is not None and day['end2'] is not None):
 
                                 if(day['end2'] > day['start2']):
+
                                     dt_start = week_date + \
                                         timedelta(seconds=day['start2']*60)
                                     timestamp_start = (
@@ -189,11 +218,16 @@ for lugar in data:
                                             "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                         })
 
+                                list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+
 
 jsonAvailibilityServ['availability'] = jsonAvailibilityServA
 jsonAvailibilityServi.append(jsonAvailibilityServ)
 
 jsonAvailibility['service_availability'] = jsonAvailibilityServi
+
+with open('list_wrong.json', 'w') as filew:
+    filew.write(json.dumps(list_wrong))
 
 with open('output/availabilityRecurrence'+str(c_d)+'.json', 'w') as file:
     json.dump(jsonAvailibility, file)
