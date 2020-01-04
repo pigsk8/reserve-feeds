@@ -2,29 +2,22 @@
 #!/usr/bin/python
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
-with open('entry/lugares.json') as file:
+with open('entry/lugares.json', encoding='utf-8') as file:
     data_lugar = json.load(file)
 
-with open('entry/metas.json') as fileM:
+with open('entry/metas.json', encoding='utf-8') as fileM:
     data_metas = json.load(fileM)
 
 timestamp = int(time.time())
 
 # especificar fecha desde que se hara el recorrido
-fecha = '2019/12/02'
-current_day = datetime.strptime(fecha, '%Y/%m/%d')
+today = date.today()
+c_d = today.strftime("%m_%d")
 
-current_day_m = current_day.month
-current_day_d = current_day.day
-
-c_d = str(current_day.month)+'_'+str(current_day_d)
-
-# list_lugares = ['11408', '8676', '2047', '6124']
 list_lugares = ['11408', '8676', '1705', '1983', '978', '13365', '13314', '13348', '160', '13319',
                 '13417', '11677', '3181', '989', '911', '999', '930', '166', '921', '13291', '5338', '2962', '13459', '12022', '6252', '10042', '13549']
-
 
 jsonMerchant = {
     "metadata": {
@@ -35,7 +28,6 @@ jsonMerchant = {
     }
 }
 jsonMerchantInfo = []
-
 
 jsonService = {
     "metadata": {
@@ -49,12 +41,11 @@ jsonServiceInfo = []
 
 count = 0
 
-
 for lugar in data_lugar:
 
     if lugar['ID'] in list_lugares:
 
-        name = lugar['post_title'].encode("utf-8")
+        name = lugar['post_title']
         name = name.replace('Restaurante y Bar ', '')
         name = name.replace('Restaurante Bar ', '')
         name = name.replace('Bar Antro ', '')

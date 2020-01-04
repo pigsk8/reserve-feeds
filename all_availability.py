@@ -4,13 +4,13 @@ import json
 import time
 from datetime import datetime, timedelta
 
-with open('entry/sistema.json') as file:
+with open('entry/sistema.json', encoding='utf-8') as file:
     data = json.load(file)
 
-with open('entry/lugares.json') as fileL:
+with open('entry/lugares.json', encoding='utf-8') as fileL:
     data_lugar = json.load(fileL)
 
-with open('entry/metas.json') as fileM:
+with open('entry/metas.json', encoding='utf-8') as fileM:
     data_metas = json.load(fileM)
 
 timestamp = int(time.time())
@@ -30,38 +30,14 @@ array_week_dates = [current_day]
 for i in range(0, 8):
     array_week_dates.append(current_day + timedelta(days=i+1))
 
-list_wrong = {}
+print(array_week_dates)
 list_lugares = []
-# list_lugares = [248, 77, 985, 986, 987, 988, 989, 990, 992, 993, 994, 995, 996, 997, 998, 1008, 1000, 1001, 47, 55, 57, 71, 81,
-#                 82, 84, 87, 88, 89, 92, 93, 94, 95, 96, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 109, 110, 121, 150, 151, 153, 157]
 
-# list_lugares.sort()
-
-# print(list_lugares)
-
-# exit()
-
-for lugar in data_lugar:
-
-    sistema_id = 0
-
-    for meta in data_metas:
-
-        if meta['post_id'] == lugar['ID']:
-
-            if meta['meta_key'] == '_sistema_id':
-                sistema_id = meta['meta_value']
-
-    no = 0
-    number = sistema_id
-    try:
-        int(number)
-    except ValueError:
-        no = 0
-    else:
-        if (sistema_id != 0):
-            list_lugares.append(int(sistema_id))
-
+f = open('validations/sistema_in.txt', 'r')
+f1 = f.readlines()
+for x in f1:
+    if(x):
+        list_lugares.append(int(x))
 
 jsonAvailibility = {
     "metadata": {
@@ -122,7 +98,7 @@ for lugar in data:
                                     "service_id": str(lugar['id'])+"-dining",
                                     "spots_open": 10,
                                     "spots_total": 10,
-                                    "ConfirmationMode": "CONFIRMATION_MODE_ASYNCHRONOUS",
+                                    "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS",
                                     "resources": {
                                         "party_size": party_size
                                     },
@@ -141,7 +117,7 @@ for lugar in data:
                                 })
 
                         else:
-                            list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+                            print('error' + str(lugar['id']))
 
                     else:
 
@@ -182,7 +158,7 @@ for lugar in data:
                                         })
 
                                 else:
-                                    list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+                                    print('error' + str(lugar['id']))
 
                         if(day['start2'] != 0 and day['end2'] != 0):
 
@@ -218,16 +194,14 @@ for lugar in data:
                                             "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                         })
 
-                                list_wrong[lugar['name'].encode('UTF-8')] = day['weekday']
+                                else:
+                                    print('error' + str(lugar['id']))
 
 
 jsonAvailibilityServ['availability'] = jsonAvailibilityServA
 jsonAvailibilityServi.append(jsonAvailibilityServ)
 
 jsonAvailibility['service_availability'] = jsonAvailibilityServi
-
-with open('list_wrong.json', 'w') as filew:
-    filew.write(json.dumps(list_wrong))
 
 with open('output/availabilityRecurrence'+str(c_d)+'.json', 'w') as file:
     json.dump(jsonAvailibility, file)

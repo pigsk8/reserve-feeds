@@ -2,32 +2,48 @@
 #!/usr/bin/python
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
-
-with open('entry/lugares.json') as file:
+with open('entry/lugares.json', encoding='utf-8') as file:
     data_lugar = json.load(file)
 
-with open('entry/metas.json') as fileM:
+with open('entry/metas.json', encoding='utf-8') as fileM:
     data_metas = json.load(fileM)
 
 timestamp = int(time.time())
 
 list_empty = []
 
-# especificar fecha desde que se hara el recorrido
-fecha = '2019/12/03'
-current_day = datetime.strptime(fecha, '%Y/%m/%d')
-
+current_day = date.today()
+print(current_day)
 current_day_m = current_day.month
 current_day_d = current_day.day
-
 c_d = str(current_day.month)+'_'+str(current_day_d)
 
-# list_lugares = ['11408','8676','2047','6124']
+list_lugares_sys = []
+f = open('validations/sistema/sistema_in.txt', 'r')
+f1 = f.readlines()
+for x in f1:
+    if(x):
+        list_lugares_sys.append(int(x))
 
-list_not_lugares = [315, 43, 314, 339, 194, 236, 212, 417, 268, 16, 403, 1008, 274, 316, 234, 1004, 273, 252, 260, 245, 592, 487, 568, 545, 55, 584, 540, 450, 443, 542, 558, 500,
-                    459, 550, 557, 644, 575, 525, 617, 47, 852, 84, 668, 872, 655, 835, 723, 810, 805, 676, 709, 809, 654, 799, 646, 824, 823, 876, 660, 949, 955, 946, 994, 9, 996, 942, 972, 998, 933]
+list_lugares = []
+for meta in data_metas:
+    if meta['meta_key'] == '_sistema_id':
+        sistema_id = meta['meta_value']
+        number = sistema_id
+        try:
+            int(number)
+        except ValueError:
+            pass
+        else:
+            if int(sistema_id) in list_lugares_sys:
+                list_lugares.append(int(meta['post_id']))
+
+# list_lugares = list(dict.fromkeys(list_lugares))
+print(len(list_lugares))
+
+id_accept = []
 
 jsonMerchant = {
     "metadata": {
@@ -39,7 +55,6 @@ jsonMerchant = {
 }
 jsonMerchantInfo = []
 
-
 jsonService = {
     "metadata": {
         "generation_timestamp": timestamp,
@@ -49,94 +64,68 @@ jsonService = {
     },
 }
 jsonServiceInfo = []
-
 count = 0
-id_accept = []
-dict_accept = {}
 
 for lugar in data_lugar:
 
-    # if lugar['ID'] in list_lugares:
-    name = lugar['post_title'].encode("utf-8")
-    name = name.replace('Restaurante y Bar ', '')
-    name = name.replace('Restaurante Bar ', '')
-    name = name.replace('Bar Antro ', '')
-    name = name.replace('Restaurante ', '')
-    name = name.replace('Bar ', '')
-    name = name.replace('Antro ', '')
+    if int(lugar['ID']) in list_lugares:
 
-    url = 'https://reservandonos.com/lugar/'+lugar['post_name']+'/'
+        name = lugar['post_title']
+        name = name.replace('Restaurante y Bar ', '')
+        name = name.replace('Restaurante Bar ', '')
+        name = name.replace('Bar Antro ', '')
+        name = name.replace('Restaurante ', '')
+        name = name.replace('Bar ', '')
+        name = name.replace('Antro ', '')
 
-    sistema_id = 0
-    postal_code = "0"
+        url = 'https://reservandonos.com/lugar/'+lugar['post_name']+'/'
 
-    for meta in data_metas:
+        sistema_id = 0
+        postal_code = "0"
 
-        if meta['post_id'] == lugar['ID']:
+        for meta in data_metas:
 
-            if meta['meta_key'] == '_sistema_id':
-                sistema_id = meta['meta_value']
+            if meta['post_id'] == lugar['ID']:
 
-            if meta['meta_key'] == 'geolocation_formatted_address':
-                street_address = meta['meta_value']
+                if meta['meta_key'] == '_sistema_id':
+                    sistema_id = meta['meta_value']
 
-            if meta['meta_key'] == 'geolocation_city':
-                locality = meta['meta_value']
+                if meta['meta_key'] == 'geolocation_formatted_address':
+                    street_address = meta['meta_value']
 
-            if meta['meta_key'] == 'geolocation_state_short':
-                region = meta['meta_value']
+                if meta['meta_key'] == 'geolocation_city':
+                    locality = meta['meta_value']
 
-            if meta['meta_key'] == 'geolocation_country_short':
-                country = meta['meta_value']
+                if meta['meta_key'] == 'geolocation_state_short':
+                    region = meta['meta_value']
 
-            if meta['meta_key'] == 'geolocation_postcode':
-                postal_code = meta['meta_value']
+                if meta['meta_key'] == 'geolocation_country_short':
+                    country = meta['meta_value']
 
-    number = sistema_id
-    try:
-        int(number)
-    except ValueError:
-        list_empty.append(url+' - _sistema_id no es numero')
-    else:
-        if (sistema_id == 0):
-            list_empty.append(url+' - _sistema_id es cero')
+                if meta['meta_key'] == 'geolocation_postcode':
+                    postal_code = meta['meta_value']
 
-        if (sistema_id != 0):
+        number = sistema_id
+        try:
+            int(number)
+        except ValueError:
+            pass
+        else:
 
-            empty = 0
+            if (sistema_id != 0):
 
-            if (street_address == ""):
-                list_empty.append(url+' - geolocation_formatted_address')
-                empty = 1
+                empty = 0
+                if (street_address == "" or locality == "" or region == "" or country == "" or postal_code == ""):
+                    empty = 1
 
-            if (locality == ""):
-                list_empty.append(url+' - geolocation_city')
-                empty = 1
+                if(not empty):
 
-            if (region == ""):
-                list_empty.append(url+' - geolocation_state_short')
-                empty = 1
+                    count += 1
 
-            if (country == ""):
-                list_empty.append(url+' - geolocation_country_short')
-                empty = 1
+                    if (count < 40):
 
-            if (postal_code == ""):
-                list_empty.append(url+' -geolocation_postcode')
-                empty = 1
+                        id_accept.append(int(sistema_id))
 
-            if(not empty):
-
-                count += 1
-
-                if str(sistema_id) not in str(list_not_lugares):
-
-                    if (count < 101):
-
-                        id_accept.append(sistema_id)
-                        
-                        dict_accept[sistema_id] = lugar['ID']
-                        
                         jsonServiceInfoAdd = [{
                             "url": url
                         }]
@@ -169,14 +158,9 @@ for lugar in data_lugar:
 jsonMerchant['merchant'] = jsonMerchantInfo
 jsonService['service'] = jsonServiceInfo
 
-# with open('listfile.txt', 'w') as filehandle:
-#     for empty in list_empty:
-#         filehandle.write('%s\n' % empty)
+id_accept.sort()
 
-for key in sorted(dict_accept.keys()) :
-    print(key , " :: " , dict_accept[key])
-
-with open('listacept.txt', 'w') as filehandle:
+with open('listaccept.txt', 'w') as filehandle:
     for accept in id_accept:
         filehandle.write('%s\n' % accept)
 

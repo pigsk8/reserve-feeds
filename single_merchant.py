@@ -4,34 +4,34 @@ import json
 import time
 from datetime import datetime, timedelta
 
-#https://reservandonos.com/wp-json/webinfinitech/v1/get-data-places
-with open('entry/lugares.json') as file:
-	data_lugar = json.load(file)
+# https://reservandonos.com/wp-json/webinfinitech/v1/get-data-places
+with open('entry/lugares.json', encoding='utf-8') as file:
+    data_lugar = json.load(file)
 
-#https://reservandonos.com/wp-json/webinfinitech/v1/get-data-places-metas
-with open('entry/metas.json') as fileM:
-	data_metas = json.load(fileM)
+# https://reservandonos.com/wp-json/webinfinitech/v1/get-data-places-metas
+with open('entry/metas.json', encoding='utf-8') as fileM:
+    data_metas = json.load(fileM)
 
 timestamp = int(time.time())
 
 jsonMerchant = {
-	"metadata": {
-		"generation_timestamp": timestamp,
-		"processing_instruction": "PROCESS_AS_COMPLETE",
-		"shard_number": 0,
-		"total_shards": 1
-	}
+    "metadata": {
+        "generation_timestamp": timestamp,
+        "processing_instruction": "PROCESS_AS_INCREMENTAL",
+        "shard_number": 0,
+        "total_shards": 1
+    }
 }
 jsonMerchantInfo = []
 
 
 jsonService = {
     "metadata": {
-            "generation_timestamp": timestamp,
-            "processing_instruction": "PROCESS_AS_COMPLETE",
-            "shard_number": 0,
-            "total_shards": 1
-	},
+        "generation_timestamp": timestamp,
+        "processing_instruction": "PROCESS_AS_INCREMENTAL",
+        "shard_number": 0,
+        "total_shards": 1
+    },
 }
 jsonServiceInfo = []
 
@@ -76,8 +76,8 @@ jsonMerchantInfo.append({
 jsonMerchant['merchant'] = jsonMerchantInfo
 jsonService['service'] = jsonServiceInfo
 
-with open('output/merchant880.json', 'w') as file:
+with open('output/merchant_single.json', 'w') as file:
     json.dump(jsonMerchant, file)
 
-with open('output/service880.json', 'w') as file:
+with open('output/service_single.json', 'w') as file:
     json.dump(jsonService, file)

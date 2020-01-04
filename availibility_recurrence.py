@@ -2,44 +2,58 @@
 #!/usr/bin/python
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+import pytz
+import sys
 
-with open('entry/sistema.json') as file:
+
+def is_date(date_text):
+    try:
+        datetime.strptime(date_text, '%Y/%m/%d')
+    except ValueError:
+        return False
+    else:
+        return True
+
+# especificar fecha desde que se hara el recorrido
+if len(sys.argv) > 1:
+    new_date = sys.argv[1]
+    if (is_date(new_date)):
+        current_day = datetime.strptime(new_date, '%Y/%m/%d')
+    else:
+        current_day = date.today()
+else:
+    current_day = date.today()
+
+current_day_m = current_day.month
+current_day_d = current_day.day
+c_d = str(current_day.month)+'_'+str(current_day_d)
+
+# local = pytz.timezone ("America/Caracas")
+# naive = datetime.strptime ("2019-12-26 15:37:12", "%Y-%m-%d %H:%M:%S")
+# local_dt = local.localize(naive, is_dst=None)
+utc_timezone = pytz.timezone("UTC")
+naive_utc = datetime.strptime("1970-1-1", "%Y-%m-%d")
+utc_date = utc_timezone.localize(naive_utc, is_dst=None)
+# timestamp_start = (local_dt - utc_date).total_seconds()
+
+with open('entry/sistema.json', encoding='utf-8') as file:
     data = json.load(file)
 
 timestamp = int(time.time())
 
-# especificar fecha desde que se hara el recorrido
-fecha = '2019/12/03'
-current_day = datetime.strptime(fecha, '%Y/%m/%d')
-
-current_day_m = current_day.month
-current_day_d = current_day.day
-
-c_d = str(current_day.month)+'_'+str(current_day_d)
-
-array_week_dates = [current_day]
-
-# definir fecha a 30 dias
+array_week_dates = [datetime.combine(current_day + timedelta(days=0), datetime.min.time())]
+# definir fecha a X dias
 for i in range(0, 8):
-    array_week_dates.append(current_day + timedelta(days=i+1))
-
-# list_lugares = [880, 168, 227, 841, 733, 174, 684]
-# list_lugares = ['168', '841', '733', '109', '1007', '1002', '1005', '10',
-#                 '1003', '1009', '1001', '319', '110', '102', '111', '104', '11', '103', '1000', '154', '623', '293', '887', '696', '739', '1012']
-
-# list_lugares = [248, 77, 985, 986, 987, 988, 989, 990, 992, 993, 995, 997, 1000, 1001,
-#                 71, 88, 89, 101, 102, 103, 104, 105, 106, 107, 109, 110, 121, 150, 151, 153, 157]
+    array_week_dates.append(datetime.combine(current_day + timedelta(days=i+1), datetime.min.time()))
 
 list_lugares = []
 
-f = open('listacept.txt', 'r')
+f = open('listaccept.txt', 'r')
 f1 = f.readlines()
 for x in f1:
     if(x):
         list_lugares.append(int(x))
-
-print(list_lugares)
 
 jsonAvailibility = {
     "metadata": {
@@ -54,11 +68,18 @@ jsonAvailibilityServ = {}
 jsonAvailibilityServi = []
 jsonAvailibilityServA = []
 count = 0
+
+max_personas_mesa = 5
+tiempo_mesa = 900
+tiempo_menos_final = int(tiempo_mesa/60)
+
 for lugar in data:
 
     if lugar['id'] in list_lugares:
         count += 1
-        print(str(count)+'. '+str(lugar['id']))
+        local_timezone = pytz.timezone(lugar['timezone'])
+
+        print(str(count)+'. '+str(lugar['id'])+' - '+lugar['timezone'])
         for day in lugar['openingDays']:
 
             for week_date in array_week_dates:
@@ -75,39 +96,47 @@ for lugar in data:
 
                             dt_start = week_date + \
                                 timedelta(seconds=day['start']*60)
+                            local_dt_start = local_timezone.localize(
+                                dt_start, is_dst=None)
                             timestamp_start = (
-                                dt_start - datetime(1970, 1, 1)).total_seconds()
+                                local_dt_start - utc_date).total_seconds()
 
                             dt_end = week_date + \
                                 timedelta(seconds=(day['end'])*60)
+                            local_dt_end = local_timezone.localize(
+                                dt_end, is_dst=None)
                             timestamp_end = (
-                                dt_end - datetime(1970, 1, 1)).total_seconds()
+                                local_dt_end - utc_date).total_seconds()
 
                             dt_start2 = week_date + \
                                 timedelta(seconds=day['start2']*60)
+                            local_dt_start2 = local_timezone.localize(
+                                dt_start2, is_dst=None)
                             timestamp_start2 = (
-                                dt_start2 - datetime(1970, 1, 1)).total_seconds()
+                                local_dt_start2 - utc_date).total_seconds()
 
                             dt_end2 = week_date + \
-                                timedelta(seconds=(day['end2']-30)*60)
+                                timedelta(seconds=(day['end2']-tiempo_menos_final)*60)
+                            local_dt_end2 = local_timezone.localize(
+                                dt_end2, is_dst=None)
                             timestamp_end2 = (
-                                dt_end2 - datetime(1970, 1, 1)).total_seconds()
+                                local_dt_end2 - utc_date).total_seconds()
 
-                            for party_size in range(1, 11):
+                            for party_size in range(1, max_personas_mesa):
                                 jsonAvailibilityServA.append({
-                                    "duration_sec": 1800,
+                                    "duration_sec": tiempo_mesa,
                                     "start_sec": int(timestamp_start),
                                     "merchant_id": "merch"+str(lugar['id']),
                                     "service_id": str(lugar['id'])+"-dining",
                                     "spots_open": 10,
                                     "spots_total": 10,
-                                    "ConfirmationMode": "CONFIRMATION_MODE_ASYNCHRONOUS",
+                                    "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS",
                                     "resources": {
                                         "party_size": party_size
                                     },
                                     "recurrence": {
                                         "repeat_until_sec": int(timestamp_end2),
-                                        "repeat_every_sec": 1800
+                                        "repeat_every_sec": tiempo_mesa
                                     },
                                     "schedule_exception": [
                                         {
@@ -128,19 +157,31 @@ for lugar in data:
                             if(day['start'] is not None and day['end'] is not None):
 
                                 if(day['end'] > day['start']):
-                                    dt_start = week_date + \
-                                        timedelta(seconds=day['start']*60)
+                                    dt_start = (week_date + timedelta(seconds=day['start']*60))
+                                    local_dt_start = local_timezone.localize(
+                                        dt_start, is_dst=None)
                                     timestamp_start = (
-                                        dt_start - datetime(1970, 1, 1)).total_seconds()
+                                        local_dt_start - utc_date).total_seconds()
 
                                     dt_end = week_date + \
-                                        timedelta(seconds=(day['end']-30)*60)
+                                        timedelta(seconds=(day['end']-tiempo_menos_final)*60)
+                                    local_dt_end = local_timezone.localize(
+                                        dt_end, is_dst=None)
                                     timestamp_end = (
-                                        dt_end - datetime(1970, 1, 1)).total_seconds()
+                                        local_dt_end - utc_date).total_seconds()
 
-                                    for party_size in range(1, 11):
+                                    if(lugar['id'] == 986):
+                                        print(dt_start)
+                                        print(local_dt_start)
+                                        print(timestamp_start)
+                                        print(dt_end)
+                                        print(local_dt_end)
+                                        print(timestamp_end)
+                                        print()
+
+                                    for party_size in range(1, max_personas_mesa):
                                         jsonAvailibilityServA.append({
-                                            "duration_sec": 1800,
+                                            "duration_sec": tiempo_mesa,
                                             "start_sec": int(timestamp_start),
                                             "merchant_id": "merch"+str(lugar['id']),
                                             "service_id": str(lugar['id'])+"-dining",
@@ -151,7 +192,7 @@ for lugar in data:
                                             },
                                             "recurrence": {
                                                 "repeat_until_sec": int(timestamp_end),
-                                                "repeat_every_sec": 1800
+                                                "repeat_every_sec": tiempo_mesa
                                             },
                                             "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                         })
@@ -163,17 +204,21 @@ for lugar in data:
                                 if(day['end2'] > day['start2']):
                                     dt_start = week_date + \
                                         timedelta(seconds=day['start2']*60)
+                                    local_dt_start = local_timezone.localize(
+                                        dt_start, is_dst=None)
                                     timestamp_start = (
-                                        dt_start - datetime(1970, 1, 1)).total_seconds()
+                                        local_dt_start - utc_date).total_seconds()
 
                                     dt_end = week_date + \
-                                        timedelta(seconds=(day['end2']-30)*60)
+                                        timedelta(seconds=(day['end2']-tiempo_menos_final)*60)
+                                    local_dt_end = local_timezone.localize(
+                                        dt_end, is_dst=None)
                                     timestamp_end = (
-                                        dt_end - datetime(1970, 1, 1)).total_seconds()
+                                        local_dt_end - utc_date).total_seconds()
 
-                                    for party_size in range(1, 11):
+                                    for party_size in range(1, max_personas_mesa):
                                         jsonAvailibilityServA.append({
-                                            "duration_sec": 1800,
+                                            "duration_sec": tiempo_mesa,
                                             "start_sec": int(timestamp_start),
                                             "merchant_id": "merch"+str(lugar['id']),
                                             "service_id": str(lugar['id'])+"-dining",
@@ -184,7 +229,7 @@ for lugar in data:
                                             },
                                             "recurrence": {
                                                 "repeat_until_sec": int(timestamp_end),
-                                                "repeat_every_sec": 1800
+                                                "repeat_every_sec": tiempo_mesa
                                             },
                                             "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                         })
