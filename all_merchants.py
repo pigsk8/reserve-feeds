@@ -122,7 +122,7 @@ for lugar in data_lugar:
 
                     count += 1
 
-                    if (count < 40):
+                    if (count < 41):
 
                         id_accept.append(int(sistema_id))
 

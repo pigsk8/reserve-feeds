@@ -5,7 +5,13 @@ import time
 from datetime import datetime, timedelta, date
 import pytz
 import sys
+from random import randint
+from pathlib import Path
 
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
 
 def is_date(date_text):
     try:
@@ -37,14 +43,15 @@ utc_date = utc_timezone.localize(naive_utc, is_dst=None)
 with open('entry/sistema.json', encoding='utf-8') as file:
     data = json.load(file)
 
-timestamp = int(time.time())
+timestamp_init = int(time.time())
 
 array_week_dates = [datetime.combine(
     current_day + timedelta(days=0), datetime.min.time())]
+
 # definir fecha a X dias
-# for i in range(0, 8):
-#     array_week_dates.append(datetime.combine(
-#         current_day + timedelta(days=i+1), datetime.min.time()))
+for i in range(0, 8):
+    array_week_dates.append(datetime.combine(
+        current_day + timedelta(days=i+1), datetime.min.time()))
 
 list_lugares = []
 
@@ -54,37 +61,42 @@ for x in f1:
     if(x):
         list_lugares.append(int(x))
 
-list_lugares = [71]
+shard_number = 0
+total_shard = len(list_lugares)
+nonce = int(random_with_N_digits(10))
 
-
-jsonAvailibility = {
-    "metadata": {
-        "processing_instruction": "PROCESS_AS_COMPLETE",
-        "shard_number": 0,
-        "total_shards": 1,
-        "generation_timestamp": timestamp
-    }
-}
-
-jsonAvailibilityServ = {}
-jsonAvailibilityServi = []
-jsonAvailibilityServA = []
-
-count = 0
+#if 2 mean 1 persona
 max_personas_mesa = 3
+#tiempo_mesa in sec
 tiempo_mesa = 900
 tiempo_menos_final = int(tiempo_mesa/60)
 
 for lugar in data:
 
     if lugar['id'] in list_lugares:
-        count += 1
+
+        jsonAvailibility = {
+            "metadata": {
+                "processing_instruction": "PROCESS_AS_COMPLETE",
+                "shard_number": shard_number,
+                "total_shards": total_shard,
+                "nonce": int(nonce),
+                "generation_timestamp": int(timestamp_init)
+            }
+        }
+
+        shard_number += 1
+
+        jsonAvailibilityServ = {}
+        jsonAvailibilityServi = []
+        jsonAvailibilityServA = []
+
         local_timezone = pytz.timezone(lugar['timezone'])
-        # print(str(count)+'. '+str(lugar['id'])+' - '+lugar['timezone'])
 
-        for day in lugar['openingDays']:
+        for week_date in array_week_dates:
+            
+            for day in lugar['openingDays']:
 
-            for week_date in array_week_dates:
                 # if(week_date.strftime('%A').lower() == day['weekday'] and (day['weekday'] == 'wednesday' or day['weekday'] == 'thursday' or day['weekday'] == 'friday')):
                 if(week_date.strftime('%A').lower() == day['weekday']):
 
@@ -96,15 +108,17 @@ for lugar in data:
                                 # timestamp = (dt - datetime(1970, 1, 1)).total_seconds()
 
                                 dt = week_date + timedelta(seconds=minutes*60)
-                                local_dt = local_timezone.localize(dt, is_dst=None)
-                                timestamp = (local_dt - utc_date).total_seconds()
+                                local_dt = local_timezone.localize(
+                                    dt, is_dst=None)
+                                timestamp = (
+                                    local_dt - utc_date).total_seconds()
 
-                                if(day['weekday']=='friday'):
-                                    print(day['weekday'])
-                                    print(dt)
-                                    print(local_dt)
-                                    print(timestamp)
-                                    print()
+                                # if(day['weekday'] == 'wednesday'):
+                                #     print(day['weekday'])
+                                #     print(dt)
+                                #     print(local_dt)
+                                #     print(timestamp)
+                                #     print()
 
                                 for party_size in range(1, max_personas_mesa):
                                     jsonAvailibilityServA.append({
@@ -128,16 +142,18 @@ for lugar in data:
                                 # timestamp = (dt - datetime(1970, 1, 1)).total_seconds()
 
                                 dt = week_date + timedelta(seconds=minutes*60)
-                                local_dt = local_timezone.localize(dt, is_dst=None)
-                                timestamp = (local_dt - utc_date).total_seconds()
+                                local_dt = local_timezone.localize(
+                                    dt, is_dst=None)
+                                timestamp = (
+                                    local_dt - utc_date).total_seconds()
 
-                                if(day['weekday']=='wednesday'):
-                                    print(day['weekday'])
-                                    print(dt)
-                                    print(local_dt)
-                                    print(timestamp)
-                                    print()
-                                    
+                                # if(day['weekday'] == 'wednesday'):
+                                #     print(day['weekday'])
+                                #     print(dt)
+                                #     print(local_dt)
+                                #     print(timestamp)
+                                #     print()
+
                                 for party_size in range(1, max_personas_mesa):
                                     jsonAvailibilityServA.append({
                                         "duration_sec": tiempo_mesa,
@@ -152,10 +168,11 @@ for lugar in data:
                                         "confirmation_mode": "CONFIRMATION_MODE_ASYNCHRONOUS"
                                     })
 
-jsonAvailibilityServ['availability'] = jsonAvailibilityServA
-jsonAvailibilityServi.append(jsonAvailibilityServ)
+        jsonAvailibilityServ['availability'] = jsonAvailibilityServA
+        jsonAvailibilityServi.append(jsonAvailibilityServ)
 
-jsonAvailibility['service_availability'] = jsonAvailibilityServi
+        jsonAvailibility['service_availability'] = jsonAvailibilityServi
 
-with open('output/availibility'+c_d+'.json', 'w') as file:
-    json.dump(jsonAvailibility, file)
+        Path('output/availibility'+c_d).mkdir(parents=True, exist_ok=True)
+        with open('output/availibility'+c_d+'/availibility_'+c_d+'_'+str(lugar['id'])+'_'+str(shard_number)+'of'+str(total_shard)+'.json', 'w') as file:
+            json.dump(jsonAvailibility, file)
