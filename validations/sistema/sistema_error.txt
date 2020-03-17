@@ -1,0 +1,60 @@
+b'Gusano Mezcaler\xc3\xada' - no tiene horarios en el sistema
+b"Porfirio's Altavista" - no tiene horarios en el sistema
+b'Restaurante La Vicenta Tezontle' - el primer fin es mayor o igual al segundo comienzo
+b'Bar BB Show' - no tiene horarios en el sistema
+b'T\xc3\xados San \xc3\x81ngel' - no tiene horarios en el sistema
+b'Las Tinajas' - no tiene horarios en el sistema
+b'T\xc3\xados Santa F\xc3\xa9' - no tiene horarios en el sistema
+b'Restaurante Bonetta' - no tiene horarios en el sistema
+b'Cantina La No. 20 Coyoac\xc3\xa1n' - es mayor el inicio al final 1
+b'Restaurante Est\xc3\xa1 Krbon' - no tiene horarios en el sistema
+b"Restaurante Bar Morton's" - no tiene horarios en el sistema
+b'Restaurante Tannat' - no tiene horarios en el sistema
+b'Antro Balvin Club Roma' - no tiene horarios en el sistema
+b'Bar Dobermann Centro' - no tiene horarios en el sistema
+b'Restaurante Bar Ivoire Polanco' - no tiene horarios en el sistema
+b'Bar Maxine Dinner and Show' - no tiene horarios en el sistema
+b'Restaurante La Buena Tierra Condesa' - no tiene horarios en el sistema
+b'Restaurante Esquina 44' - no tiene horarios en el sistema
+b'Ixkati' - no tiene horarios en el sistema
+b'Restaurante La Pizzarra Canc\xc3\xban' - no tiene horarios en el sistema
+b'Restaurantes Taco Grill Canc\xc3\xban' - no tiene horarios en el sistema
+b'Asha Bar' - no tiene horarios en el sistema
+b'Delirio Beach Club' - no tiene horarios en el sistema
+b'Coraz\xc3\xb3n de Alcachofa Polanco' - no tiene horarios en el sistema
+b'Restaurante Magno Brasserie Guadalajara' - es mayor el inicio al final 2
+b'Restaurante Magno Brasserie Guadalajara' - es mayor el inicio al final 2
+b'Restaurante Golden Sea Canc\xc3\xban' - no tiene horarios en el sistema
+b'Restaurante Nara Japanese Kitchen Interlomas' - no tiene horarios en el sistema
+b'CANTA BAR M\xc3\x89XICO CIUDAD DE LOS DEPORTES' - no tiene horarios en el sistema
+b'Capital Night Club' - no tiene horarios en el sistema
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Il Forno' - es mayor el inicio al final 1
+b'Restaurante Casa Bariachi' - no tiene horarios en el sistema
+b'Restaurante A La Parrilla' - el primer fin es mayor o igual al segundo comienzo
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Locura Millesime Tulum' - es mayor el inicio al final 1
+b'Locura Millesime Tulum' - es mayor el inicio al final 2
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
+b'Restaurante Loyal Order Tulum' - es mayor el inicio al final 1
